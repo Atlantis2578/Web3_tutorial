@@ -17,7 +17,7 @@ contract FundMe{
 
     address public owner;
 
-    AggregatorV3Interface internal dataFeed;
+    AggregatorV3Interface public dataFeed;
 
     uint256 deploymentTimestamp;
     uint256 lockTime;
@@ -26,8 +26,8 @@ contract FundMe{
 
     bool public fundSuccess = false;
 
-    constructor(uint256 _lockTime){
-        dataFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+    constructor(uint256 _lockTime, address dataFeedAddr){
+        dataFeed = AggregatorV3Interface(dataFeedAddr);
         owner = msg.sender;
         deploymentTimestamp = block.timestamp;
         lockTime = _lockTime;
