@@ -26,6 +26,9 @@ contract FundMe{
 
     bool public fundSuccess = false;
 
+    event FundWithdrawByOwner(uint256);
+    event RefundByFunder(address, uint256);
+
     constructor(uint256 _lockTime, address dataFeedAddr){
         dataFeed = AggregatorV3Interface(dataFeedAddr);
         owner = msg.sender;
@@ -35,7 +38,7 @@ contract FundMe{
 
     function fund() external payable {
         require(convertEthToUsd(msg.value) >= MIN_VALUE, "send more eth");
-        require(block.timestamp < deploymentTimestamp + lockTime, "time out");
+        require(block.timestamp < deploymentTimestamp + lockTime, "window is closed");
         funderToAmount[msg.sender] = msg.value;
     }
 
@@ -51,7 +54,7 @@ contract FundMe{
         return answer;
     }
 
-    function convertEthToUsd(uint256 ethAmount) internal view returns(uint256){
+    function convertEthToUsd(uint256 ethAmount) public view returns(uint256){
         uint256 ethPrice = uint256(getChainlinkDataFeedLatestAnswer());
         return ethAmount * ethPrice / (10 ** 8);
     }
@@ -64,19 +67,23 @@ contract FundMe{
         require(convertEthToUsd(address(this).balance) >= TARGET_VALUE, "Target value not achieved");
         // payable (msg.sender).transfer(address(this).balance);
         bool success;
-        (success, ) = payable (msg.sender).call{value: address(this).balance}("");
+        uint256 balance = address(this).balance;
+        (success, ) = payable (msg.sender).call{value: balance}("");
         require(success, "transfer fx failed");
         funderToAmount[msg.sender] = 0;
         fundSuccess = true;
+        emit FundWithdrawByOwner(balance);
     }
 
     function reFund() external windowClose{
         require(convertEthToUsd(address(this).balance)  < TARGET_VALUE, "Target value achieved");
-        require(funderToAmount[msg.sender] != 0, "This money doesn't belong to you");
+        require(funderToAmount[msg.sender] != 0, "there is no fund for you");
         bool success;
-        (success, ) = payable (msg.sender).call{value: funderToAmount[msg.sender]}("");
+        uint256 balance = funderToAmount[msg.sender];
+        (success, ) = payable (msg.sender).call{value: balance}("");
         require(success, "transfer fx failed");
         funderToAmount[msg.sender] = 0;
+        emit RefundByFunder(msg.sender, balance);
     }
 
     function setFunderToAmount(address funder, uint256 amountoUpdate) external {
@@ -89,7 +96,7 @@ contract FundMe{
     }
 
     modifier windowClose(){
-        require(block.timestamp >= deploymentTimestamp + lockTime, "time out");
+        require(block.timestamp >= deploymentTimestamp + lockTime, "window is closed");
         _;
     }
 

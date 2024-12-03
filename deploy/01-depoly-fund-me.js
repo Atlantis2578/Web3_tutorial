@@ -20,11 +20,14 @@ module.exports = async({getNamedAccounts, deployments}) => {
     const {deploy} = deployments
 
     let dataFeedAddr
+    let confirmations
     if(devlopmentChains.includes(network.name)){
         const mockV3Aggregator = await deployments.get("MockV3Aggregator")
         dataFeedAddr = mockV3Aggregator.address
+        confirmations = 0
     }else{
         dataFeedAddr = newtworkConfig[network.config.chainId].ethUsdDataFeed
+        confirmations = CONFIRMATIONS
     }
 
     const fundMe = await deploy("FundMe", {
