@@ -1,8 +1,8 @@
 const DECIMAL = 8
 const INITIAL_ANSWER = 300000000000
 const devlopmentChains = ["hardhat", "local"]
-const LOCK_TIME = 60
-const CONFIRMATIONS = 2
+const LOCK_TIME = 120
+const CONFIRMATIONS = 3
 
 const newtworkConfig = {
     11155111: {

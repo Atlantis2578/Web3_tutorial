@@ -18,6 +18,10 @@ const API_KEY = process.env.API_KEY;
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.27",
+  defaultNetwork: "hardhat",
+  mocha: {
+    timeout: 300000
+  },
   networks: {
     sepolia: {
       url: SEPOLIA_URL,
@@ -40,6 +44,9 @@ module.exports = {
     secondAccount: {
       default: 1
     }
-  }
+  },
+  analytics: {
+    enabled: false,
+},
 };
  

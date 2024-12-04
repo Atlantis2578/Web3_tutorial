@@ -16,6 +16,9 @@ const API_KEY = process.env.API_KEY;
 // }
 
 module.exports = async({getNamedAccounts, deployments}) => {
+
+    console.log("01-depoly-fund-me")
+
     const {firstAccount} = await getNamedAccounts()
     const {deploy} = deployments
 
@@ -24,18 +27,28 @@ module.exports = async({getNamedAccounts, deployments}) => {
     if(devlopmentChains.includes(network.name)){
         const mockV3Aggregator = await deployments.get("MockV3Aggregator")
         dataFeedAddr = mockV3Aggregator.address
+        console.log(dataFeedAddr)
         confirmations = 0
     }else{
         dataFeedAddr = newtworkConfig[network.config.chainId].ethUsdDataFeed
         confirmations = CONFIRMATIONS
     }
 
-    const fundMe = await deploy("FundMe", {
-        from: firstAccount,
-        args: [LOCK_TIME, dataFeedAddr],
-        log: true,
-        waitConfirmations: CONFIRMATIONS
-    })
+    console.log("01-1")
+
+    try {
+        const fundMe = await deploy("FundMe", {
+            from: firstAccount,
+            args: [LOCK_TIME, dataFeedAddr],
+            log: true,
+            waitConfirmations: confirmations,
+        });
+        console.log("FundMe deployed at:", fundMe.address);
+    } catch (error) {
+        console.error("Error deploying FundMe:", error);
+    }
+
+    console.log("01-2")
     // remove deployments directory or add --reset flag if you redeploy contract
     
     if(hre,network.config.chainId == 11155111 && API_KEY){
